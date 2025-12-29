@@ -1,0 +1,19 @@
+[robot]
+hardware = "R1_LITE"
+
+[basic]
+control_frequency = 15.0
+step_mode = "sync"
+action_steps = 32
+
+[model]
+ckpt_dir = "/path/to/ckpt/dir"
+use_trt = false
+processor = "default"
+
+[instruction]
+use_vlm = true
+bbox_as_instruction = false
+image_condition_lang_prefix = true
+pp_lower_half = false
+image_as_condition = true
