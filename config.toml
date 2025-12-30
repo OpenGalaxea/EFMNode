@@ -2,12 +2,14 @@
 hardware = "R1_LITE"
 
 [basic]
+deque_length = 200
+camera_deque_length = 7
 control_frequency = 15.0
 step_mode = "sync"
 action_steps = 32
 
 [model]
-ckpt_dir = "/path/to/ckpt/dir"
+ckpt_dir = "/data/G0Plus_CKPT_in_use/checkpoints/"
 use_trt = false
 processor = "default"
 
