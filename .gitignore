@@ -8,7 +8,6 @@ rosbags/*
 *.png
 
 # C extensions
-*.so
 efmnode_obs_logs/
 
 # Distribution / packaging
