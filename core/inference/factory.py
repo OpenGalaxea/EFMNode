@@ -5,7 +5,7 @@ from loguru import logger
 
 from core.inference.inference_engine import InferenceEngine
 from core.inference.pytorch_engine import PyTorchEngine
-from core.inference.tensorrt_engine import TensorRTEngine, DefaultTRTConfig
+from core.inference.tensorrt_engine import TensorRTEngine
 
 def create_inference_engine(
     config: Dict[str, Any],

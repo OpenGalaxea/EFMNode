@@ -7,7 +7,7 @@ step_mode = "sync"
 action_steps = 32
 
 [model]
-ckpt_dir = "/data/trt_ckpts/"
+ckpt_dir = "/data/G0Plus_PP_CKPT/"
 use_trt = true
 processor = "cuda" # Optional: 'cuda' for TensorRT, 'default' for Pytorch 
 
