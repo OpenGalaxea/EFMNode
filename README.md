@@ -13,17 +13,25 @@ EFMNode is a robot control node that integrates vision-language models (VLM) wit
 
 ### Prerequisites
 - CUDA-capable GPU (RTX 4090 with CUDA driver over 12.8 is recommended)
+- ROS2 (Humble or later)
+- Python 3.8+
 
 ### Installation Steps
 
-1. **Clone and install the GalaxeaFM repository** (if not already done):
+1. **Clone the EFMNode repository**:
+```bash
+git clone https://github.com/OpenGalaxea/EFMNode.git
+cd EFMNode
+```
+
+2. **Clone and install the GalaxeaFM repository** (if not already done):
 ```bash
 git clone https://github.com/OpenGalaxea/GalaxeaFM.git
 cd GalaxeaFM
 uv sync --index-strategy unsafe-best-match
 uv pip install -e .
 source .venv/bin/activate
-
+cd ..
 ```
 
 ## Model Weights and Configuration
@@ -37,6 +45,8 @@ The checkpoint directory should contain:
 - `config.yaml` - Model configuration file
 - `dataset_stats.json` - Dataset statistics for preprocessing
 - Model weight files (`.pth`, `.pt`, or TensorRT engine files)
+
+**Note for TensorRT users**: When using TensorRT (`use_trt = true`), the TensorRT plugin `gemma_rmsnorm.so` should be placed in `plugins/lib/` directory. The plugin path is automatically resolved relative to the project root.
 
 ### Configure `config.toml`
 
