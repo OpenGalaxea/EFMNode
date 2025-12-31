@@ -2,14 +2,14 @@
 hardware = "R1_LITE"
 
 [basic]
-control_frequency = 15.0
+control_frequency = 30.0
 step_mode = "sync"
 action_steps = 32
 
 [model]
-ckpt_dir = "/path/to/ckpt/dir"
-use_trt = false
-processor = "default" # Optional: 'cuda' for TensorRT, 'default' for Pytorch 
+ckpt_dir = "/data/trt_ckpts/"
+use_trt = true
+processor = "cuda" # Optional: 'cuda' for TensorRT, 'default' for Pytorch 
 
 [instruction]
 use_vlm = true
