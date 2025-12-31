@@ -8,8 +8,8 @@ action_steps = 32
 
 [model]
 ckpt_dir = "/path/to/ckpt/dir"
-use_trt = true
-processor = "cuda" # Optional: 'cuda' for TensorRT, 'default' for Pytorch 
+use_trt = false
+processor = "default" # Optional: 'cuda' for TensorRT, 'default' for Pytorch 
 
 [instruction]
 use_vlm = true

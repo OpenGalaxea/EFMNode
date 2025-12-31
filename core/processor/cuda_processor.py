@@ -22,12 +22,6 @@ class CUDAProcessor(Processor):
         )
 
     def initialize(self, dataset_stats_path: Path) -> None:
-        """
-        初始化处理器，加载数据集统计信息
-        
-        Args:
-            dataset_stats_path: 数据集统计信息文件路径
-        """
         logger.info(f"Initializing Galaxea processor with dataset stats from {dataset_stats_path}")
 
         self.processor = instantiate(self.cfg.model.processor)

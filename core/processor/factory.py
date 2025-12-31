@@ -11,21 +11,6 @@ def create_processor(
     cfg: DictConfig,
     processor_type: Optional[str] = None
 ) -> Processor:
-    """
-    工厂函数：根据配置创建对应的处理器
-    
-    Args:
-        config: 配置字典（从 config.toml 加载）
-        cfg: OmegaConf 配置对象（从模型 checkpoint 加载）
-        processor_type: 处理器类型，如果为 None 则使用默认的 BaseProcessor
-        
-    Returns:
-        处理器实例
-        
-    Raises:
-        ValueError: 如果 processor_type 不支持
-    """
-    # 如果没有指定类型，使用默认的 BaseProcessor
     if processor_type is None:
         processor_type = "default"
     
