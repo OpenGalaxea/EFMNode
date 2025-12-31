@@ -12,9 +12,9 @@ EFMNode is a robot control node that integrates vision-language models (VLM) wit
 ## Environment Setup
 
 ### Prerequisites
-- CUDA-capable GPU (RTX 4090 with CUDA driver over 12.8 is recommended)
-- ROS2 (Humble or later)
-- Python 3.8+
+- CUDA-capable GPU (RTX 4090 with CUDA driver over 12.8 is recommended for TensorRT)
+- ROS2 Humble
+- Python 3.10
 
 ### Installation Steps
 
