@@ -26,7 +26,7 @@ cd EFMNode
 
 2. **Clone and install the GalaxeaFM repository** (if not already done):
 ```bash
-git clone https://github.com/OpenGalaxea/GalaxeaFM.git
+git clone https://github.com/OpenGalaxea/GalaxeaVLA.git
 cd GalaxeaFM
 uv sync --index-strategy unsafe-best-match
 uv pip install -e .
