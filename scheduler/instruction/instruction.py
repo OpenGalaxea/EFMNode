@@ -40,12 +40,12 @@ class InstructionManager:
         logger.info(f"instruction: {instruction}")
         if instruction in ['', 'nothing']:
             self.last_instruction = instruction
-            obs["instruction"] = instruction
+            obs["task"] = instruction
             return InstructionAction.SKIP
         
         elif instruction == "reset":
             self.last_instruction = instruction
-            obs["instruction"] = instruction
+            obs["task"] = instruction
             return InstructionAction.RESET
         
         elif instruction != self.last_instruction:
@@ -59,13 +59,13 @@ class InstructionManager:
                 if "image" in self.extra_info:
                     obs["images"]["head_condition"] = torch.from_numpy(self.extra_info["image"]).unsqueeze(0).cuda()
                 if "instruction" in self.extra_info:
-                    obs["instruction"] = self.extra_info["instruction"]
+                    obs["task"] = self.extra_info["instruction"]
             return InstructionAction.CONTINUE
         else:
             if "image" in self.extra_info:
                 obs["images"]["head_condition"] = torch.from_numpy(self.extra_info["image"]).unsqueeze(0).cuda()
             if "instruction" in self.extra_info:
-                obs["instruction"] = self.extra_info["instruction"]
+                obs["task"] = self.extra_info["instruction"]
 
             return InstructionAction.CONTINUE
 

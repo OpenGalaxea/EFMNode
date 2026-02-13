@@ -11,6 +11,41 @@ EFMNode is a robot control node that integrates vision-language models (VLM) wit
 
 ## Environment Setup
 
+### Recommanded Environment
+we recommend using Docker for better experience
+
+1. pull the image
+
+```bash
+docker pull edp-image-registry-cn-beijing.cr.volces.com/infer-public/galaxea_infer
+```
+
+2. start a container
+```bash
+docker run -itd \
+  --name galaxea \
+  --network host \
+  --gpus all \
+  -e DISPLAY=$DISPLAY \
+  -v /tmp/.X11-unix/X1:/tmp/.X11-unix/X11 \
+  edp-image-registry-cn-beijing.cr.volces.com/infer-public/galaxea_infer:latest
+
+```
+
+3. execution with glx cli
+```bash
+docker exec -it galaxea bash
+
+glx discovery 10.42.0.<ROBOT_PORT>
+glx run <MODEL_DIR_NAME> # MODEL_DIR_NAME is the model directory under ~/.galaxea/models
+```
+
+4. Usage
+for more usage, can try
+```bash
+glx help
+```
+
 ### Prerequisites
 - CUDA-capable GPU (RTX 4090 with CUDA driver over 12.8 is recommended for TensorRT)
 - ROS2 Humble

@@ -9,4 +9,4 @@ export HYDRA_FULL_ERROR=1
 export PYTHONPATH="${SCRIPT_DIR}/../:${PYTHONPATH:-}"
 export LD_LIBRARY_PATH=/data/TensorRT-10.13.0.35/lib/:/usr/lib/x86_64-linux-gnu/:$LD_LIBRARY_PATH
 
-python3 "${SCRIPT_DIR}/../run.py" "$@"
+python3 "${SCRIPT_DIR}/../serving/policy_server.py" "$@"

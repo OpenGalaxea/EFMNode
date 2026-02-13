@@ -19,7 +19,7 @@ class BaseProcessor(Processor):
         logger.info(f"Initializing Galaxea processor with dataset stats from {dataset_stats_path}")
         
         # 实例化处理器
-        self.processor = instantiate(self.cfg.model.processor)
+        self.processor = instantiate(self.cfg.data.processor)
         
         # 加载数据集统计信息
         dataset_stats = load_dataset_stats_from_json(dataset_stats_path)

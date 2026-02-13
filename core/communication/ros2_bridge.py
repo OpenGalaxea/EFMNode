@@ -28,6 +28,9 @@ class Ros2Bridge:
         self.topics_config = RobotTopicsConfig()
         self.use_recv_time = use_recv_time
         self.cfg = cfg
+        self.hardware = config["robot"]["hardware"]
+        self.enable_publish = config["robot"]["enable_publish"]
+        logger.info(f"config.toml:\nhardware:{self.hardware}\nenable publish: {self.enable_publish}")
         
         if not rclpy.ok():
             rclpy.init()
@@ -46,56 +49,61 @@ class Ros2Bridge:
         self.callback_group = ReentrantCallbackGroup()
         
         self.executor = MultiThreadedExecutor(num_threads=num_threads)
+        self.last_obs_time = None
         
         self.init_topics()
 
         self.executor.add_node(self.node)
         
+
+        import threading
         self._executor_thread = threading.Thread(target=self._run_executor, daemon=True)
         self._executor_thread.start()
         logger.info(f"Ros2Bridge init.")
 
     def init_topics(self):
         for name, topic in self.topics_config.images.items():
+            channel, msg_type = topic.channel, topic.msg_type
             self.obs_buffer[name] = MessageQueue(maxlen=self.topics_config.camera_deque_length)
-            self.subscribers[topic] = self.node.create_subscription(
-                self.topics_config.message_type["images"], 
-                topic, 
+            self.subscribers[channel] = self.node.create_subscription(
+                msg_type, 
+                channel, 
                 partial(self.image_callback, _stack=self.obs_buffer[name]), 
                 self.topics_config.qos["sub"],
                 callback_group=self.callback_group
             )
 
         for name, topic in self.topics_config.state.items():
+            channel, msg_type = topic.channel, topic.msg_type
             self.obs_buffer[name] = MessageQueue(maxlen=self.topics_config.state_deque_length)
-            logger.info(f'{name}: {topic}')
+
             if "ee_pose" in name:
-                self.subscribers[topic] = self.node.create_subscription(
-                    self.topics_config.message_type["pose"], 
-                    topic, 
-                    partial(self.pose_callback, _stack=self.obs_buffer[name]), 
-                    self.topics_config.qos["sub"],
-                    callback_group=self.callback_group
-                )
+                callback = partial(self.pose_callback, _stack=self.obs_buffer[name])
             else:
-                self.subscribers[topic] = self.node.create_subscription(
-                    self.topics_config.message_type["state"], 
-                    topic, 
-                    partial(self.state_callback, _stack=self.obs_buffer[name], state_name=name), 
-                    self.topics_config.qos["sub"],
-                    callback_group=self.callback_group
-                )
+                callback = partial(self.state_callback, _stack=self.obs_buffer[name], state_name=name)
+
+            self.subscribers[channel] = self.node.create_subscription(
+                msg_type, 
+                channel, 
+                callback,
+                self.topics_config.qos["sub"],
+                callback_group=self.callback_group\
+            )
 
         for name, topic in self.topics_config.action.items():
+            channel, msg_type = topic.channel, topic.msg_type
             self.publishers[topic] = self.node.create_publisher(
-                self.topics_config.message_type["action"], topic, self.topics_config.qos["pub"])
+                msg_type, 
+                channel, 
+                self.topics_config.qos["pub"]
+            )
 
     def is_running(self):
         return rclpy.ok()
 
     def publish_action(self, action: RobotAction):
         for name, msg in asdict(action).items():
-            if msg is not None:
+            if msg is not None and name in self.enable_publish:
                 self.publishers[self.topics_config.action[name]].publish(msg)
 
     def reset(self, step_size=0.2, freq = 5):
@@ -161,18 +169,22 @@ class Ros2Bridge:
         head_rgb_key = "head_rgb"
         if head_rgb_key not in self.obs_buffer or len(self.obs_buffer[head_rgb_key]) == 0:
             logger.warning("Head camera buffer is empty")
-            return None
+            return None, None
         
         head_buffer = self.obs_buffer[head_rgb_key]
         head_msg = head_buffer[-1]
         reference_time = head_msg["message_time"]
+
+        if self.last_obs_time == reference_time:
+            logger.warning(f'No new message in Head camera buffer')
+            return None, None
         
         obs = {"images": {}, "state": {}}
         
         for name, buffer in self.obs_buffer.items():
             if len(buffer) == 0:
                 logger.warning(f"Buffer {name} is empty, skipping")
-                return None
+                return None, None
             
             if name == head_rgb_key:
                 data = head_msg["data"]
@@ -180,7 +192,7 @@ class Ros2Bridge:
                 nearest_msg = self._find_nearest_message(buffer, reference_time)
                 if nearest_msg is None:
                     logger.warning(f"Failed to find nearest message for {name}")
-                    return None
+                    return None, None
                 data = nearest_msg["data"]
             
             if not isinstance(data, torch.Tensor):
@@ -190,13 +202,20 @@ class Ros2Bridge:
                 obs["images"][name] = data.to(device)#.unsqueeze(0)
             else:
                 obs["state"][name] = data.float()
+                
+            
+            if name == 'chassis':
+                obs["state"][name] = obs["state"][name][..., 0: 3]
+                torch.atan2(torch.sin(obs["state"][name]), torch.cos(obs["state"][name]))
 
         obs["state_is_pad"] = torch.tensor([False])
         obs["image_is_pad"] = torch.tensor([False])
-        obs["action_is_pad"] = torch.tensor([False]*32)
+        obs["action_is_pad"] = torch.tensor([False]*50)
         obs["idx"] = torch.tensor(0)
 
-        return obs
+        self.last_obs_time = reference_time
+
+        return reference_time, obs
 
 
     def _run_executor(self):

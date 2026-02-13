@@ -6,7 +6,7 @@ import time
 import numpy as np
 
 MODEL_ID = "gemini-robotics-er-1.5-preview"
-API_KEY = "AIzaSyCqb5z_URW6xEdjeJCAunKPm-NAGvRT8lM"
+API_KEY = ""
 client = genai.Client(api_key=API_KEY)
 
 

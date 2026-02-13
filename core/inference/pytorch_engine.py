@@ -6,6 +6,9 @@ from loguru import logger
 from hydra.utils import instantiate
 
 from core.inference.inference_engine import InferenceEngine
+from galaxea_fm.utils.config_resolvers import register_default_resolvers
+
+register_default_resolvers()
 
 
 class PyTorchEngine(InferenceEngine):
@@ -17,14 +20,19 @@ class PyTorchEngine(InferenceEngine):
         state_dict_path = checkpoint_path / "model_state_dict.pt"
         
         logger.info(f"Loading state dict from {state_dict_path}")
-        state_dict = torch.load(state_dict_path, map_location="cpu")
+        state_dict = torch.load(state_dict_path, map_location=self.device)
         
         if isinstance(state_dict, dict) and "model_state_dict" in state_dict:
-            model.load_state_dict(state_dict["model_state_dict"], strict=False)
+            model.load_state_dict(state_dict["model_state_dict"], strict=True)
         else:
-            model.load_state_dict(state_dict, strict=False)
+            model.load_state_dict(state_dict, strict=True)
+            
+        del state_dict
         
         self.model = model.to(self.device)
+        if self.config['model']['is_torch_compile']:
+            self.model = torch.compile(self.model, mode="max-autotune")
+            self.warmup()
         self.model.eval()
         logger.info("PyTorch model loaded successfully")
 
@@ -50,7 +58,9 @@ class PyTorchEngine(InferenceEngine):
             (batch_size, self.cfg.model.model_arch.max_image_text_tokens),
             dtype=torch.long).to(self.device)
         batch["attention_mask"] = torch.ones_like(batch["input_ids"], dtype=torch.bool).to(self.device)
+        batch["task"] = ["null"] * batch_size
         
+        self.predict_action(batch)
         logger.info("PyTorch model warmed up successfully")
         actions = self.predict_action(batch)
     
@@ -58,7 +68,7 @@ class PyTorchEngine(InferenceEngine):
         batch = self.to_device(batch, self.device)
         
         with torch.no_grad():
-            batch = self.model.predict_action(batch)
+            batch = self.model.forward(batch, inference_mode=True)
         
         return batch
 

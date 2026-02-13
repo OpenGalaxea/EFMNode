@@ -4,40 +4,43 @@ from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, DurabilityPo
 from sensor_msgs.msg import CompressedImage, JointState
 from geometry_msgs.msg import PoseStamped
 
+@dataclass(frozen=True)
+class Topic:
+    channel: str
+    msg_type: CompressedImage | JointState | PoseStamped
+
 @dataclass
 class RobotTopicsConfig:
-    state: Dict[str, str] = field(
+    state: Dict[str, Topic] = field(
         default_factory=lambda: {
-            "left_arm": "/hdas/feedback_arm_left",
-            "right_arm": "/hdas/feedback_arm_right",
-            "torso": "/hdas/feedback_torso",
-            "chassis": "/hdas/feedback_chassis",
-            "left_ee_pose": "/motion_control/pose_ee_arm_left",
-            "right_ee_pose": "/motion_control/pose_ee_arm_right",
-            "left_gripper": "/hdas/feedback_gripper_left",
-            "right_gripper": "/hdas/feedback_gripper_right"
+            "left_arm": Topic("/hdas/feedback_arm_left", JointState),
+            "right_arm": Topic("/hdas/feedback_arm_right", JointState),
+            "torso": Topic("/hdas/feedback_torso", JointState),
+            "chassis": Topic("/hdas/feedback_chassis", JointState),
+            "left_ee_pose": Topic("/motion_control/pose_ee_arm_left", PoseStamped),
+            "right_ee_pose": Topic("/motion_control/pose_ee_arm_right", PoseStamped),
+            "left_gripper": Topic("/hdas/feedback_gripper_left", JointState),
+            "right_gripper": Topic("/hdas/feedback_gripper_right", JointState),
         }
     )
 
-    images: Dict[str, str] = field(
+    images: Dict[str, Topic] = field(
         default_factory=lambda: {
-            "head_rgb": "/hdas/camera_head/left_raw/image_raw_color/compressed",
-            "left_wrist_rgb": "/hdas/camera_wrist_left/color/image_raw/compressed",
-            "right_wrist_rgb": "/hdas/camera_wrist_right/color/image_raw/compressed",
-            
+            "head_rgb": Topic("/hdas/camera_head/left_raw/image_raw_color/compressed", CompressedImage),
+            "left_wrist_rgb": Topic("/hdas/camera_wrist_left/color/image_raw/compressed", CompressedImage),
+            "right_wrist_rgb": Topic("/hdas/camera_wrist_right/color/image_raw/compressed", CompressedImage),
         }
     )
 
-
-    action: Dict[str, str] = field(
+    action: Dict[str, Topic] = field(
         default_factory=lambda: {
-            "left_arm": "/motion_target/target_joint_state_arm_left",
-            "right_arm": "/motion_target/target_joint_state_arm_right",
-            "torso": "/motion_target/target_speed_torso",
-            "left_gripper": "/motion_target/target_position_gripper_left",
-            "right_gripper": "/motion_target/target_position_gripper_right",
-            "left_ee_pose": "/motion_target/target_pose_arm_left",
-            "right_ee_pose": "/motion_target/target_pose_arm_right"
+            "left_arm": Topic("/motion_target/target_joint_state_arm_left", JointState),
+            "right_arm": Topic("/motion_target/target_joint_state_arm_right", JointState),
+            "torso": Topic("/motion_target/target_joint_state_torso", JointState),
+            "left_ee_pose": Topic("/motion_target/target_pose_arm_left", PoseStamped),
+            "right_ee_pose": Topic("/motion_target/target_pose_arm_right", PoseStamped),
+            "left_gripper": Topic("/motion_target/target_position_gripper_left", JointState),
+            "right_gripper": Topic("/motion_target/target_position_gripper_right", JointState),
         }
     )
 
@@ -55,15 +58,6 @@ class RobotTopicsConfig:
                 depth=1,
                 durability=DurabilityPolicy.VOLATILE
             ),
-        }
-    )
-
-    message_type: Dict[str, type] = field(
-        default_factory=lambda: {
-            "state": JointState,
-            "images": CompressedImage,
-            "action": JointState,
-            "pose": PoseStamped,
         }
     )
 
